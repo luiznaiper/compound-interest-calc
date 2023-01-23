@@ -1,25 +1,60 @@
-import styled from 'styled-components';
+import { Form, Formik } from 'formik';
+import { useState } from 'react';
+import Balance from './components/Balance';
+import Button from './components/Button';
+import Container from './components/Container';
+import Input from './components/Input';
+import Section from './components/Section';
 
-const Container = styled.div`
-  display: flex;
-  justify-content: center;
-  height: 100%;
-  align-items: center;
-`;
+const compoundInterest = (deposit, contribution, years, rate) => {
+  let total = deposit;
+  for (let i = 0; i < years; i++) {
+    total = (total + contribution) * (rate + 1);
+  }
+  return Math.round(total);
+};
 
-const Section = styled.section`
-  background-color: #2d2d3a;
-  color: #7d7d80;
-  border-top: solid 2px #fb8122;
-  padding: 20px 25px;
-  width: 500px;
-  box-shadow: 0px 2px 3px rgba(255, 255, 255, 0.3);
-`;
+const formatter = new Intl.NumberFormat('en-us', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
 function App() {
+  const [balance, setBalance] = useState('');
+
+  const handleSubmit = ({ deposit, contribution, years, rate }) => {
+    const val = compoundInterest(
+      Number(deposit),
+      Number(contribution),
+      Number(years),
+      Number(rate)
+    );
+    setBalance(formatter.format(val));
+  };
   return (
     <Container>
-      <Section>Lala</Section>
+      <Section>
+        <Formik
+          initialValues={{
+            deposit: '',
+            contribution: '',
+            years: '',
+            rate: '',
+          }}
+          onSubmit={handleSubmit}
+        >
+          <Form>
+            <Input name="deposit" label="Initial Deposit" />
+            <Input name="contribution" label="Anual Contribution" />
+            <Input name="years" label="Years" />
+            <Input name="rate" label="Estimate Interest" />
+            <Button type="submit">Calculate</Button>
+          </Form>
+        </Formik>
+        {balance !== '' ? <Balance>Final Balance: {balance}</Balance> : null}
+      </Section>
     </Container>
   );
 }
